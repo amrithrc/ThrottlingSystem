@@ -23,17 +23,20 @@ app.get("/", async function(req, res)  {
 
     let dbResult=await Throttle.find({});
          if (dbResult[0].time == "") {
-                let currentTime=new Date().toISOString().slice(17,19)+"000";
+                let currentTime=new Date().toISOString().slice(14,16)*60000+new Date().toISOString().slice(17,19)*1000;
                 await Throttle.updateOne({ name: "Test" }, { time: currentTime});
+                console.log("currentTime",currentTime);
             }
-    setTimeout(()=> {
-        console.log("Delayed for 1 second.");
-    },  "1000"    
-    );
-    let endTime = new Date().toISOString().slice(17,19)+"000";
-
+     setTimeout(()=> {
+         console.log("Delayed for 1 second.");
+     },  "1000"    
+     );
+ 
+    let endTime = new Date().toISOString().slice(14,16)*60000+new Date().toISOString().slice(17,19)*1000;
+    console.log("endTime",endTime);
     let dbExecResult=await Throttle.find({});
-             if (dbExecResult[0].apiCount > maxAllowedRequest && endTime - dbExecResult[0].time > maxAllowedTime) {
+
+             if (dbExecResult[0].apiCount >= maxAllowedRequest && endTime - dbExecResult[0].time >= maxAllowedTime) {
                 await Throttle.updateOne({ name: "Test" }, { apiCount: 0 });
                 await Throttle.updateOne({ name: "Test" }, { time: '' });
                 console.log("Max Request Limit has Reached");
@@ -42,9 +45,10 @@ app.get("/", async function(req, res)  {
                 let latestCount = dbExecResult[0].apiCount+1;
                 await Throttle.updateOne({ name: "Test" }, { apiCount: latestCount });
             }
+            console.log("dbExecResult",await Throttle.find({}));
 }
 );
-app.listen(process.env.PORT || 7000, () => {
+app.listen(process.env.PORT || 7010, () => {
     console.log('Express server started on port');
 }
 );
